@@ -1,0 +1,61 @@
+﻿@page "/login"
+@inject CustomAuthenticationStateProvider customAuthStateProvider
+@* @inject BlazorAuthService authService
+ *@@using Blazor8ServerAuthLab2.Auth
+@using Blazor8ServerAuthLab2.Models
+@using EasyArchitect.Web.Blazor.AuthExtensions
+
+<h3>Login</h3>
+
+<EditForm class="form-signin" OnValidSubmit="OnSubmit" Model="loginRequest" FormName="MyLoginForm1">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label for="inputUsername" class="sr-only">User Name</label>
+    <InputText id="inputUsername" class="form-control" @bind-Value="loginRequest.UserName" autofocus placeholder="Username" />
+    <ValidationMessage For="@(() => loginRequest.UserName)" />
+    <label for="inputPassword" class="sr-only">Password</label>
+    <InputText type="password" id="inputPassword" class="form-control" placeholder="Password" @bind-Value="loginRequest.Password" />
+    <ValidationMessage For="@(() => loginRequest.Password)" />
+    @*     <div class="form-check m-3">
+    <InputCheckbox id="inputRememberMe" class="form-check-input" @bind-Value="@loginRequest.RememberMe" />
+    <label class="form-check-label" for="inputRememberMe">Remember Me</label>
+    </div>
+    *@    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    <label class="text-danger">@error</label>
+    <NavLink href="register">
+        <h6 class="font-weight-normal text-center">Create account</h6>
+    </NavLink>
+</EditForm>
+
+@code {
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    LoginRequest loginRequest { get; set; } = new LoginRequest();
+    string? error { get; set; } = string.Empty;
+
+    async Task OnSubmit()
+    {
+        error = null;
+        try
+        {
+            await customAuthStateProvider.Login(loginRequest);
+            // await Task.FromResult(authService.ProcessLogin(new AuthenticateRequest()
+            // {
+            //     Username = loginRequest.UserName,
+            //     Password = loginRequest.Password
+            // }));
+
+            //navigationManager.NavigateTo("/");
+            HttpContext!.Response.Redirect("/");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+
+        // return Task.CompletedTask;
+    }
+}
